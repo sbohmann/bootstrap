@@ -2,6 +2,9 @@
 
 #include "replacements.h"
 
-struct TemplateEngineResult;
+struct TemplateEngineResult {
+    const char *text;
+    const size_t size;
+};
 
-struct TemplateEngineResult * processTemplate(const char *template, struct Replacements *replacements);
+struct TemplateEngineResult processTemplate(const char *template, struct Replacements *replacements);
