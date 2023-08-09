@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "template_engine.h"
 
@@ -9,7 +10,7 @@ struct TextBuffer {
     size_t capacity;
 };
 
-struct TextBuffer * TextBuffer_create() {
+struct TextBuffer *TextBuffer_create() {
     struct TextBuffer *result = malloc(sizeof(struct TextBuffer));
     int initialCapacity = 256;
     result->data = malloc(initialCapacity);
@@ -18,31 +19,118 @@ struct TextBuffer * TextBuffer_create() {
     return result;
 }
 
-void TextBuffer_append(struct TextBuffer *buffer, char c) {
-    if (buffer->size < buffer->capacity - 1) {
-        buffer->data[buffer->size] = c;
-        ++buffer->size;
-    } else {
-        size_t newDataCapacity = buffer->capacity * 2;
-        char *newData = malloc(newDataCapacity);
-        bzero(newData, newDataCapacity);
-        memcpy(newData, buffer->data, buffer->size);
-        char *oldData = buffer->data;
-        buffer->data = newData;
-        buffer->capacity = newDataCapacity;
+void TextBuffer_append(struct TextBuffer *self, char c) {
+    if (self->size + 1 > self->capacity - 1) {
+        size_t newCapacity = self->capacity * 2;
+        char *newData = malloc(newCapacity);
+        bzero(newData, newCapacity);
+        memcpy(newData, self->data, self->size);
+        char *oldData = self->data;
+        self->data = newData;
+        self->capacity = newCapacity;
         free(oldData);
     }
+    self->data[self->size] = c;
+    ++self->size;
 }
+
+void TextBuffer_appendBlock(struct TextBuffer *self, const char *block, size_t delta) {
+    if (self->size + delta > self->capacity - 1) {
+        size_t newCapacity = self->capacity * 2;
+        while (self->size + delta > newCapacity - 1) {
+            newCapacity *= 2;
+        }
+        char *newData = malloc(newCapacity);
+        bzero(newData, newCapacity);
+        memcpy(newData, self->data, self->size);
+        char *oldData = self->data;
+        self->data = newData;
+        self->capacity = newCapacity;
+        free(oldData);
+    }
+    memcpy(self->data, block, delta);
+}
+
+enum state {
+    text_state,
+    at_state,
+    underscore_state,
+    key_state
+};
+
+struct TemplateEngine {
+    const char *template;
+    struct TextBuffer *buffer;
+    struct TextBuffer *keyBuffer;
+    enum state state;
+    size_t outputIndex;
+};
+
+void TemplateEngine_writeToIndex(struct TemplateEngine *self, size_t index);
+
+void TemplateEngine_resetKeyBuffer(struct TemplateEngine *self, size_t index);
 
 struct TemplateEngineResult bufferToResult(struct TextBuffer *buffer);
 
+bool isKeyChar(char c);
+
+bool isKeyStartChar(char c);
+
 struct TemplateEngineResult processTemplate(const char *template, struct Replacements *replacements) {
-    struct TextBuffer *buffer = TextBuffer_create();
+    struct TemplateEngine self;
+    self.template = template;
+    self.buffer = TextBuffer_create();
+    self.keyBuffer = TextBuffer_create();
+    self.state = text_state;
+    self.outputIndex = 0;
     for (size_t index = 0; template[index] != 0; ++index) {
         const char c = template[index];
-        TextBuffer_append(buffer, c);
+        switch (self.state) {
+            case text_state:
+                if (c == '@') {
+                    self.state = at_state;
+                } else {
+                    TextBuffer_append(self.buffer, c);
+                }
+                break;
+            case underscore_state:
+                if (isKeyStartChar(c)) {
+                    TextBuffer_append(self.keyBuffer, c);
+                    self.state = key_state;
+                } else {
+                    TemplateEngine_writeToIndex(&self, index);
+                    self.state = text_state;
+                }
+                break;
+            case key_state:
+                if (isKeyChar(c)) {
+                    TextBuffer_append(self.keyBuffer, c)
+                } else if (c == ';') {
+                    TemplateEngine_writeKeyReplacement(self);
+                    self.state = text_state;
+                }
+        }
+        TextBuffer_append(self.buffer, c);
     }
-    return bufferToResult(buffer);
+    return bufferToResult(self.buffer);
+}
+
+bool isKeyChar(char c) {
+    return c == '-' ||
+           c == '_' ||
+           isKeyStartChar(c);
+}
+
+bool isKeyStartChar(char c) {
+    return (c >= 'A' && c <= 'Z') ||
+           (c >= 'a' && c <= 'z') ||
+           (c >= '0' && c <= '9');
+}
+
+void TemplateEngine_writeToIndex(struct TemplateEngine *self, size_t index) {
+    size_t delta = index - self->outputIndex;
+    TextBuffer_appendBlock(self->buffer, self->template + self->outputIndex, delta);
+    self->outputIndex = index;
 }
 
 struct TemplateEngineResult bufferToResult(struct TextBuffer *buffer) {
@@ -50,7 +138,7 @@ struct TemplateEngineResult bufferToResult(struct TextBuffer *buffer) {
     size_t textLength = buffer->size;
     free(buffer);
     return (struct TemplateEngineResult) {
-        text,
-        textLength
+            text,
+            textLength
     };
 }
