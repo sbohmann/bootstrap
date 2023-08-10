@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "template_engine.h"
 
@@ -19,6 +20,15 @@ struct TextBuffer *TextBuffer_create() {
     return result;
 }
 
+void TextBuffer_delete(struct TextBuffer *instance) {
+    free(instance->data);
+    free(instance);
+}
+
+void TextBuffer_reset(struct TextBuffer *self) {
+    self->size = 0;
+}
+
 void TextBuffer_append(struct TextBuffer *self, char c) {
     if (self->size + 1 > self->capacity - 1) {
         size_t newCapacity = self->capacity * 2;
@@ -31,6 +41,7 @@ void TextBuffer_append(struct TextBuffer *self, char c) {
         free(oldData);
     }
     self->data[self->size] = c;
+    self->data[self->size + 1] = 0;
     ++self->size;
 }
 
@@ -49,6 +60,8 @@ void TextBuffer_appendBlock(struct TextBuffer *self, const char *block, size_t d
         free(oldData);
     }
     memcpy(self->data, block, delta);
+    self->data[self->size + delta] = 0; 
+    self->size += delta;
 }
 
 enum state {
@@ -60,6 +73,7 @@ enum state {
 
 struct TemplateEngine {
     const char *template;
+    struct Replacements *replacements;
     struct TextBuffer *buffer;
     struct TextBuffer *keyBuffer;
     enum state state;
@@ -68,9 +82,9 @@ struct TemplateEngine {
 
 void TemplateEngine_writeToIndex(struct TemplateEngine *self, size_t index);
 
-void TemplateEngine_resetKeyBuffer(struct TemplateEngine *self, size_t index);
-
 struct TemplateEngineResult bufferToResult(struct TextBuffer *buffer);
+
+void TemplateEngine_writeKeyReplacement(struct TemplateEngine *self);
 
 bool isKeyChar(char c);
 
@@ -79,6 +93,7 @@ bool isKeyStartChar(char c);
 struct TemplateEngineResult processTemplate(const char *template, struct Replacements *replacements) {
     struct TemplateEngine self;
     self.template = template;
+    self.replacements = replacements;
     self.buffer = TextBuffer_create();
     self.keyBuffer = TextBuffer_create();
     self.state = text_state;
@@ -93,10 +108,23 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
                     TextBuffer_append(self.buffer, c);
                 }
                 break;
+            case at_state:
+                if (c == '_') {
+                    self.state = underscore_state;
+                } else if (c == '@') {
+                    TemplateEngine_writeToIndex(&self, index);
+                    self.state = at_state;
+                } else {
+                    TemplateEngine_writeToIndex(&self, index);
+                    self.state = text_state;
+                }
             case underscore_state:
                 if (isKeyStartChar(c)) {
                     TextBuffer_append(self.keyBuffer, c);
                     self.state = key_state;
+                } else if (c == '@') {
+                    TemplateEngine_writeToIndex(&self, index);
+                    self.state = at_state;
                 } else {
                     TemplateEngine_writeToIndex(&self, index);
                     self.state = text_state;
@@ -104,27 +132,18 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
                 break;
             case key_state:
                 if (isKeyChar(c)) {
-                    TextBuffer_append(self.keyBuffer, c)
+                    TextBuffer_append(self.keyBuffer, c);
+                } else if (c == '@') {
+                    TemplateEngine_writeToIndex(&self, index);
+                    self.state = at_state;
                 } else if (c == ';') {
-                    TemplateEngine_writeKeyReplacement(self);
+                    TemplateEngine_writeKeyReplacement(&self);
                     self.state = text_state;
                 }
         }
         TextBuffer_append(self.buffer, c);
     }
     return bufferToResult(self.buffer);
-}
-
-bool isKeyChar(char c) {
-    return c == '-' ||
-           c == '_' ||
-           isKeyStartChar(c);
-}
-
-bool isKeyStartChar(char c) {
-    return (c >= 'A' && c <= 'Z') ||
-           (c >= 'a' && c <= 'z') ||
-           (c >= '0' && c <= '9');
 }
 
 void TemplateEngine_writeToIndex(struct TemplateEngine *self, size_t index) {
@@ -141,4 +160,29 @@ struct TemplateEngineResult bufferToResult(struct TextBuffer *buffer) {
             text,
             textLength
     };
+}
+
+void TemplateEngine_writeKeyReplacement(struct TemplateEngine *self) {
+    char *key = self->keyBuffer->data;
+    struct Replacement replacement = Replacements_get(self->replacements, key);
+    if (replacement.value == NULL) {
+        fprintf(stderr, "No replacement found for key [%s]", key);
+        exit(1);
+    }
+    TextBuffer_appendBlock(self->buffer,
+                           replacement.value,
+                           replacement.length);
+    TextBuffer_reset(self->keyBuffer);
+}
+
+bool isKeyChar(char c) {
+    return c == '-' ||
+           c == '_' ||
+           isKeyStartChar(c);
+}
+
+bool isKeyStartChar(char c) {
+    return (c >= 'A' && c <= 'Z') ||
+           (c >= 'a' && c <= 'z') ||
+           (c >= '0' && c <= '9');
 }

@@ -7,6 +7,7 @@
 struct Node {
     const char *key;
     const char *value;
+    size_t length;
     struct Node *left;
     struct Node *right;
 };
@@ -37,23 +38,29 @@ void Replacements_add(struct Replacements *self, const char *key, const char *va
     }
 }
 
-const char *valueForNode(struct Node *pNode, const char *key);
+struct Replacement replacementForNode(struct Node *pNode, const char *key);
 
-const char * Replacements_get(struct Replacements *self, const char *key) {
-    return valueForNode(self->baseNode, key);
+struct Replacement Replacements_get(struct Replacements *self, const char *key) {
+    return replacementForNode(self->baseNode, key);
 }
 
-const char *valueForNode(struct Node *node, const char *key) {
+struct Replacement replacementForNode(struct Node *node, const char *key) {
     if (node == NULL) {
-        return NULL;
+        return (struct Replacement) {
+            NULL,
+            0
+        };
     }
     int delta = strcmp(key, node->key);
     if (delta == 0) {
-        return node->value;
+        return (struct Replacement) {
+            node->value,
+            node->length
+        };
     } else if (delta < 0) {
-        return valueForNode(node->left, key);
+        return replacementForNode(node->left, key);
     } else {
-        return valueForNode(node->right, key);
+        return replacementForNode(node->right, key);
     }
 }
 
@@ -63,6 +70,7 @@ void insert(struct Node *node, const char *key, const char *value) {
     int delta = strcmp(key, node->key);
     if (delta == 0) {
         node->value = value;
+        node->length = strlen(value);
     } else if (delta < 0) {
         if (node->left != NULL) {
             insert(node->left, key, value);
@@ -83,5 +91,6 @@ struct Node *createNode(const char *key, const char *value) {
     bzero(result, sizeof(struct Node));
     result->key = key;
     result->value = value;
+    result->length = strlen(value);
     return result;
 }
