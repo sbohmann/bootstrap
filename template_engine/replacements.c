@@ -79,7 +79,7 @@ void insert(struct Node *node, const char *key, const char *value) {
         if (node->right != NULL) {
             insert(node->right, key, value);
         } else {
-            node->left = createNode(key, value);
+            node->right = createNode(key, value);
         }
     }
 }

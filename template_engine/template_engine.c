@@ -59,7 +59,7 @@ void TextBuffer_appendBlock(struct TextBuffer *self, const char *block, size_t d
         self->capacity = newCapacity;
         free(oldData);
     }
-    memcpy(self->data, block, delta);
+    memcpy(self->data + self->size, block, delta);
     self->data[self->size + delta] = 0; 
     self->size += delta;
 }
@@ -98,7 +98,8 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
     self.keyBuffer = TextBuffer_create();
     self.state = text_state;
     self.outputIndex = 0;
-    for (size_t index = 0; template[index] != 0; ++index) {
+    size_t index;
+    for (index = 0; template[index] != 0; ++index) {
         const char c = template[index];
         switch (self.state) {
             case text_state:
@@ -106,6 +107,7 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
                     self.state = at_state;
                 } else {
                     TextBuffer_append(self.buffer, c);
+                    self.outputIndex = index + 1;
                 }
                 break;
             case at_state:
@@ -139,10 +141,12 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
                     self.state = at_state;
                 } else if (c == ';') {
                     TemplateEngine_writeKeyReplacement(&self);
+                    self.outputIndex = index + 1;
                     self.state = text_state;
                 }
         }
     }
+    TemplateEngine_writeToIndex(&self, index);
     return bufferToResult(self.buffer);
 }
 
