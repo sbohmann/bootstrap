@@ -118,6 +118,7 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
                     TemplateEngine_writeToIndex(&self, index);
                     self.state = text_state;
                 }
+                break;
             case underscore_state:
                 if (isKeyStartChar(c)) {
                     TextBuffer_append(self.keyBuffer, c);
@@ -141,7 +142,6 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
                     self.state = text_state;
                 }
         }
-        TextBuffer_append(self.buffer, c);
     }
     return bufferToResult(self.buffer);
 }

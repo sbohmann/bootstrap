@@ -28,11 +28,11 @@ void Replacements_delete(struct Replacements *instance) {
 
 void insert(struct Node *node, const char *key, const char *value);
 
+struct Node *createNode(const char *key, const char *value);
+
 void Replacements_add(struct Replacements *self, const char *key, const char *value) {
     if (self->baseNode == NULL) {
-        struct Node *newBaseNode = malloc(sizeof(struct Node));
-        newBaseNode->key = key;
-        self->baseNode = newBaseNode;
+        self->baseNode = createNode(key, value);
     } else {
         insert(self->baseNode, key, value);
     }
@@ -63,8 +63,6 @@ struct Replacement replacementForNode(struct Node *node, const char *key) {
         return replacementForNode(node->right, key);
     }
 }
-
-struct Node *createNode(const char *key, const char *value);
 
 void insert(struct Node *node, const char *key, const char *value) {
     int delta = strcmp(key, node->key);

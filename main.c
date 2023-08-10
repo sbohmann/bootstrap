@@ -5,6 +5,7 @@
 int main() {
     const char *template = "abc@_key;def";
     struct Replacements *replacements = Replacements_create();
+    Replacements_add(replacements, "key", "🥳");
     struct TemplateEngineResult result =
             processTemplate(template,
             replacements);
