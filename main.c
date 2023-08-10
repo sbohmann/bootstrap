@@ -1,4 +1,5 @@
 #include <printf.h>
+#include <stdlib.h>
 
 #include "template_engine/template_engine.h"
 
@@ -13,5 +14,6 @@ int main() {
             processTemplate(template,
             replacements);
     printf("Result: [%s]\n", result.text);
+    free((void *) result.text);
     Replacements_delete(replacements);
 }
