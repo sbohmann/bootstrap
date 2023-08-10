@@ -12,6 +12,6 @@ int main() {
     struct TemplateEngineResult result =
             processTemplate(template,
             replacements);
-    printf("Result: [%s]", result.text);
+    printf("Result: [%s]\n", result.text);
     Replacements_delete(replacements);
 }
