@@ -1,5 +1,6 @@
 #include <template_engine/template_engine.h>
 #include <printf.h>
+#include <stdlib.h>
 
 #include "arraylist.h"
 #include "text/read_file.h"
@@ -15,6 +16,7 @@ void buildArrayLists() {
     const char *headerTemplate = readFile(headerTemplatePath).text;
     if (headerTemplate == NULL) {
         fprintf(stderr, "Unable to read array list template from [%s]\n", headerTemplatePath);
+        exit(1);
     }
     printf("%s\n", headerTemplate);
     buildIntArrayList();
