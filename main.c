@@ -9,7 +9,7 @@ int main() {
     Replacements_add(replacements, "key", "🥳");
     Replacements_add(replacements, "y", "yreplacement");
     Replacements_add(replacements, "x", "xreplacementadjusted");
-    struct TemplateEngineResult result =
+    struct TextResult result =
             processTemplate(template,
             replacements);
     printf("Result: [%s]\n", result.text);

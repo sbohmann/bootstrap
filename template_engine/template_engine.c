@@ -25,6 +25,15 @@ void TextBuffer_delete(struct TextBuffer *instance) {
     free(instance);
 }
 
+struct TextResult TextBuffer_release(struct TextBuffer *instance) {
+    struct TextResult result = (struct TextResult) {
+            instance->data,
+            instance->size
+    };
+    free(instance);
+    return result;
+}
+
 void TextBuffer_reset(struct TextBuffer *self) {
     self->size = 0;
 }
@@ -82,7 +91,7 @@ struct TemplateEngine {
 
 void TemplateEngine_writeToIndex(struct TemplateEngine *self, size_t index);
 
-struct TemplateEngineResult bufferToResult(struct TextBuffer *buffer);
+struct TextResult bufferToResult(struct TextBuffer *buffer);
 
 void TemplateEngine_writeKeyReplacement(struct TemplateEngine *self);
 
@@ -90,7 +99,7 @@ bool isKeyChar(char c);
 
 bool isKeyStartChar(char c);
 
-struct TemplateEngineResult processTemplate(const char *template, struct Replacements *replacements) {
+struct TextResult processTemplate(const char *template, struct Replacements *replacements) {
     struct TemplateEngine self;
     self.template = template;
     self.replacements = replacements;
@@ -151,23 +160,14 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
         }
     }
     TemplateEngine_writeToIndex(&self, index);
-    return bufferToResult(self.buffer);
+    TextBuffer_delete(self.keyBuffer);
+    return TextBuffer_release(self.buffer);
 }
 
 void TemplateEngine_writeToIndex(struct TemplateEngine *self, size_t index) {
     size_t delta = index - self->outputIndex;
     TextBuffer_appendBlock(self->buffer, self->template + self->outputIndex, delta);
     self->outputIndex = index;
-}
-
-struct TemplateEngineResult bufferToResult(struct TextBuffer *buffer) {
-    char *text = buffer->data;
-    size_t textLength = buffer->size;
-    free(buffer);
-    return (struct TemplateEngineResult) {
-            text,
-            textLength
-    };
 }
 
 void TemplateEngine_writeKeyReplacement(struct TemplateEngine *self) {
