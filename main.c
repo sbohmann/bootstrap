@@ -3,7 +3,7 @@
 #include "template_engine/template_engine.h"
 
 int main() {
-    const char *template = "abc@_key;def,@_x;,@_y;!";
+    const char *template = "@__;abc@__key;@_key;def,@_x;,@_y;!@__";
     struct Replacements *replacements = Replacements_create();
     Replacements_add(replacements, "x", "xreplacement");
     Replacements_add(replacements, "key", "🥳");

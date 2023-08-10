@@ -60,7 +60,7 @@ void TextBuffer_appendBlock(struct TextBuffer *self, const char *block, size_t d
         free(oldData);
     }
     memcpy(self->data + self->size, block, delta);
-    self->data[self->size + delta] = 0; 
+    self->data[self->size + delta] = 0;
     self->size += delta;
 }
 
@@ -128,6 +128,10 @@ struct TemplateEngineResult processTemplate(const char *template, struct Replace
                 } else if (c == '@') {
                     TemplateEngine_writeToIndex(&self, index);
                     self.state = at_state;
+                } else if (c == '_') {
+                    TextBuffer_appendBlock(self.buffer, "@_", 2);
+                    self.outputIndex = index + 1;
+                    self.state = text_state;
                 } else {
                     TemplateEngine_writeToIndex(&self, index);
                     self.state = text_state;
