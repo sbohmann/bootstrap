@@ -2,11 +2,13 @@
 #include <stdlib.h>
 
 #include "template_engine/template_engine.h"
+#include "collections/arraylist.h"
 
 void minitest();
 
 int main() {
     minitest();
+    buildArrayLists();
 }
 
 void minitest() {

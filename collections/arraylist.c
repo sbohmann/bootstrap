@@ -1,4 +1,5 @@
 #include <template_engine/template_engine.h>
+#include <printf.h>
 
 #include "arraylist.h"
 #include "text/read_file.h"
@@ -10,7 +11,12 @@ struct Configuration {
 void buildIntArrayList();
 
 void buildArrayLists() {
-    const char *headerTemplate = readFile("templates/arraylist.h").text;
+    char *headerTemplatePath = "templates/arraylist.h.template";
+    const char *headerTemplate = readFile(headerTemplatePath).text;
+    if (headerTemplate == NULL) {
+        fprintf(stderr, "Unable to read array list template from [%s]\n", headerTemplatePath);
+    }
+    printf("%s\n", headerTemplate);
     buildIntArrayList();
 }
 
