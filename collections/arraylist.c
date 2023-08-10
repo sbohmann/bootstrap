@@ -15,7 +15,7 @@ void buildArrayLists() {
     char *headerTemplatePath = "templates/arraylist.h.template";
     const char *headerTemplate = readFile(headerTemplatePath).text;
     if (headerTemplate == NULL) {
-        fprintf(stderr, "Unable to read array list template from [%s]\n", headerTemplatePath);
+        fprintf(stderr, "Unable to read array list header template from [%s]\n", headerTemplatePath);
         exit(1);
     }
     printf("%s\n", headerTemplate);
