@@ -3,6 +3,6 @@
 #include <stddef.h>
 
 struct TextResult {
-    const char *text;
+    const char * const text;
     const size_t size;
 };
