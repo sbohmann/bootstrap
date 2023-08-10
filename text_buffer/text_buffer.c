@@ -8,7 +8,7 @@ struct TextBuffer {
 };
 
 struct TextBuffer *TextBuffer_create() {
-    struct TextBuffer *result = malloc(sizeof(struct TextBuffer));
+    struct TextBuffer *result = malloc(sizeof (struct TextBuffer));
     int initialCapacity = 256;
     result->data = malloc(initialCapacity);
     result->size = 0;

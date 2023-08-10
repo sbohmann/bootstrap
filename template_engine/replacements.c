@@ -17,8 +17,8 @@ struct Replacements {
 };
 
 struct Replacements * Replacements_create() {
-    struct Replacements *result = malloc(sizeof(struct Replacements));
-    bzero(result, sizeof(struct Replacements));
+    struct Replacements *result = malloc(sizeof (struct Replacements));
+    bzero(result, sizeof (struct Replacements));
     return result;
 }
 
@@ -97,8 +97,8 @@ void insert(struct Node *node, const char *key, const char *value) {
 }
 
 struct Node *createNode(const char *key, const char *value) {
-    struct Node *result = malloc(sizeof(struct Node));
-    bzero(result, sizeof(struct Node));
+    struct Node *result = malloc(sizeof (struct Node));
+    bzero(result, sizeof (struct Node));
     result->key = key;
     result->value = value;
     result->length = strlen(value);
