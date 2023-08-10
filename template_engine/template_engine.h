@@ -1,10 +1,7 @@
 #pragma once
 
-#include "replacements.h"
+#include <text/text_result.h>
 
-struct TextResult {
-    const char *text;
-    const size_t size;
-};
+#include "replacements.h"
 
 struct TextResult processTemplate(const char *template, struct Replacements *replacements);

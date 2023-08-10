@@ -3,7 +3,13 @@
 
 #include "template_engine/template_engine.h"
 
+void minitest();
+
 int main() {
+    minitest();
+}
+
+void minitest() {
     const char *template = "@__;abc@__key;@_key;def,@_x;,@_y;!@__";
     struct Replacements *replacements = Replacements_create();
     Replacements_add(replacements, "x", "xreplacement");
