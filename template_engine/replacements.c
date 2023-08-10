@@ -22,8 +22,20 @@ struct Replacements * Replacements_create() {
     return result;
 }
 
+void deleteNode(struct Node *pNode);
+
 void Replacements_delete(struct Replacements *instance) {
+    deleteNode(instance->baseNode);
     free(instance);
+}
+
+void deleteNode(struct Node *node) {
+    if (node == NULL) {
+        return;
+    }
+    deleteNode(node->left);
+    deleteNode(node->right);
+    free(node);
 }
 
 void insert(struct Node *node, const char *key, const char *value);
