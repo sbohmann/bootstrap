@@ -50,22 +50,22 @@ void Replacements_add(struct Replacements *self, const char *key, const char *va
     }
 }
 
-struct Replacement replacementForNode(struct Node *pNode, const char *key);
+struct TextResult replacementForNode(struct Node *pNode, const char *key);
 
-struct Replacement Replacements_get(struct Replacements *self, const char *key) {
+struct TextResult Replacements_get(struct Replacements *self, const char *key) {
     return replacementForNode(self->baseNode, key);
 }
 
-struct Replacement replacementForNode(struct Node *node, const char *key) {
+struct TextResult replacementForNode(struct Node *node, const char *key) {
     if (node == NULL) {
-        return (struct Replacement) {
+        return (struct TextResult) {
             NULL,
             0
         };
     }
     int delta = strcmp(key, node->key);
     if (delta == 0) {
-        return (struct Replacement) {
+        return (struct TextResult) {
             node->value,
             node->length
         };

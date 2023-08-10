@@ -106,14 +106,14 @@ void TemplateEngine_writeToIndex(struct TemplateEngine *self, size_t index) {
 
 void TemplateEngine_writeKeyReplacement(struct TemplateEngine *self) {
     const char *key = TextBuffer_get(self->keyBuffer).text;
-    struct Replacement replacement = Replacements_get(self->replacements, key);
-    if (replacement.value == NULL) {
+    struct TextResult replacement = Replacements_get(self->replacements, key);
+    if (replacement.text == NULL) {
         fprintf(stderr, "No replacement found for key [%s]", key);
         exit(1);
     }
     TextBuffer_appendBlock(self->buffer,
-                           replacement.value,
-                           replacement.length);
+                           replacement.text,
+                           replacement.size);
     TextBuffer_reset(self->keyBuffer);
 }
 

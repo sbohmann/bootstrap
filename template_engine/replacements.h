@@ -2,12 +2,9 @@
 
 #include <stddef.h>
 
-struct Replacaments;
+#include <text/text_result.h>
 
-struct Replacement {
-    const char *value;
-    size_t length;
-};
+struct Replacaments;
 
 struct Replacements * Replacements_create();
 
@@ -15,4 +12,4 @@ void Replacements_delete(struct Replacements *instance);
 
 void Replacements_add(struct Replacements *self, const char *key, const char *value);
 
-struct Replacement Replacements_get(struct Replacements *self, const char *key);
+struct TextResult Replacements_get(struct Replacements *self, const char *key);
