@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#include <text/text_result.h>
+#include "text/text_result.h"
 
 struct Replacaments;
 

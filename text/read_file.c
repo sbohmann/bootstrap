@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <text_buffer/text_buffer.h>
-
+#include "text_buffer/text_buffer.h"
 #include "read_file.h"
 
 struct TextResult readOpenedFile(FILE *in);

@@ -1,10 +1,8 @@
 #include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
 
-#include <text_buffer/text_buffer.h>
-
+#include "text_buffer/text_buffer.h"
 #include "template_engine.h"
 
 enum state {

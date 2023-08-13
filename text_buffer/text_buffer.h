@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-#include <text/text_result.h>
+#include "text/text_result.h"
 
 struct TextBuffer;
 
